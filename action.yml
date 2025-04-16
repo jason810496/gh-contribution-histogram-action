@@ -13,6 +13,10 @@ inputs:
     description: 'Directory to save the generated PNG files'
     required: false
     default: '.'
+  exclude_authored_from_reviewed:
+    description: 'Whether to exclude PRs authored by the user from the reviewed count'
+    required: false
+    default: 'false'
 
 runs:
   using: "composite"
@@ -26,11 +30,14 @@ runs:
       shell: bash
       run: |
         python -m pip install --upgrade pip
-        pip install requests==2.31.0 pandas==2.2.2 matplotlib==3.8.4 tqdm==4.67.0
+        pip install -r ${{ github.action_path }}/requirements.txt
 
     - name: Run script
       shell: bash
       env:
         GITHUB_TOKEN: ${{ inputs.github_token }}
-        OUTPUT_DIR: ${{ inputs.output_dir }}
-      run: python ${{ github.action_path }}/gh-contribution-graph-generator.py ${{ inputs.targets }} 
+      run: |
+        python ${{ github.action_path }}/gh-contribution-graph-generator.py \
+          --targets "${{ inputs.targets }}" \
+          --output-dir "${{ inputs.output_dir }}" \
+          ${{ inputs.exclude_authored_from_reviewed == 'true' && '--exclude-authored-from-reviewed' || '' }} 

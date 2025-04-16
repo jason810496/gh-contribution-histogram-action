@@ -10,7 +10,7 @@ from tqdm import tqdm
 
 
 def generate_contribution_histogram(
-    username: str, repo_owner: str, repo_name: str, output_dir: str = "."
+    username: str, repo_owner: str, repo_name: str, output_dir: str = ".", exclude_authored_from_reviewed: bool = False
 ):
     """
     Generate a contribution histogram for a user's PRs in a specific repository.
@@ -20,6 +20,7 @@ def generate_contribution_histogram(
         repo_owner (str): Owner of the repository
         repo_name (str): Name of the repository
         output_dir (str): Directory to save the output PNG file
+        exclude_authored_from_reviewed (bool): Whether to exclude PRs authored by the user from the reviewed count
     """
     # GitHub API setup
     GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
@@ -113,8 +114,11 @@ def generate_contribution_histogram(
 
     # Fetch reviewed PRs
     print(f"\nFetching PRs reviewed by {username}...")
+    reviewed_query = f"repo:{repo_owner}/{repo_name} is:pr reviewed-by:{username}"
+    if exclude_authored_from_reviewed:
+        reviewed_query += f" -author:{username}"
     reviewed_variables = {
-        "searchQuery": f"repo:{repo_owner}/{repo_name} is:pr reviewed-by:{username}"
+        "searchQuery": reviewed_query
     }
     reviewed_prs = fetch_prs_with_cursor(
         prs_query, reviewed_variables, "Fetching reviewed PRs"
@@ -198,34 +202,63 @@ def generate_contribution_histogram(
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        print("Usage: python gh-contribution-graph-generator.py <targets>")
+        print("Usage: python gh-contribution-graph-generator.py --target <username,owner/repo> [--exclude-authored-from-reviewed]")
         print(
-            "Example: python gh-contribution-graph-generator.py peterxcli,apache/ozone"
+            "Example: python gh-contribution-graph-generator.py --target peterxcli,apache/ozone --exclude-authored-from-reviewed"
         )
         sys.exit(1)
 
-    # Get output directory from environment variable
-    output_dir = os.getenv("OUTPUT_DIR", ".")
 
-    # read all arguments
-    usernames = []
-    repos = []
-    for arg in sys.argv[1:]:
-        try:
-            username, repo = arg.split(",")
-            usernames.append(username)
-            repo_owner, repo_name = repo.split("/")
-            repos.append((repo_owner, repo_name))
-        except ValueError as e:
-            print(f"Error parsing target '{arg}': {str(e)}")
-            print("Expected format: username,owner/repo")
+    # Parse command line arguments
+    exclude_authored_from_reviewed = False
+    targets = None
+    output_dir = "."
+
+    i = 1
+    while i < len(sys.argv):
+        if sys.argv[i] == "--exclude-authored-from-reviewed":
+            exclude_authored_from_reviewed = True
+            i += 1
+        elif sys.argv[i] == "--targets":
+            if i + 1 >= len(sys.argv):
+                print("Error: --target requires a value")
+                sys.exit(1)
+            target = sys.argv[i + 1]
+            i += 2
+        elif sys.argv[i] == "--output-dir":
+            if i + 1 >= len(sys.argv):
+                print("Error: --output-dir requires a value")
+                sys.exit(1)
+            output_dir = sys.argv[i + 1]
+            i += 2
+        else:
+            print(f"Error: Unknown option {sys.argv[i]}")
             sys.exit(1)
 
-    for username, repo in zip(usernames, repos):
+    if not target:
+        print("Error: --target is required")
+        sys.exit(1)
+
+    parsed_targets = []
+    # Parse targets
+    try:
+        target_arr = target.split(" ")
+        for target in target_arr:
+            username, repo = target.split(",")
+            repo_owner, repo_name = repo.split("/")
+            parsed_targets.append((username, repo_owner, repo_name))
+    except ValueError as e:
+        print(f"Error parsing target '{target}': {str(e)}")
+        print("Expected format: username,owner/repo")
+        sys.exit(1)
+
+    for target in parsed_targets:
         try:
-            generate_contribution_histogram(username, repo[0], repo[1], output_dir)
+            generate_contribution_histogram(
+                target[0], target[1], target[2], output_dir, exclude_authored_from_reviewed
+            )
         except Exception as e:
             print(
-                f"Error generating histogram for {username} in {repo[0]}/{repo[1]}: {str(e)}"
+                f"Error generating histogram for {target[0]} in {target[1]}/{target[2]}: {str(e)}"
             )
             sys.exit(1)
