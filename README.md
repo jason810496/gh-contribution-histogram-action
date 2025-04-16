@@ -5,11 +5,12 @@ A GitHub Action that generates contribution histograms showing the number of pul
 ## Usage
 
 ```yaml
-- uses: peterxcli/gh-contribution-histogram-action@v1.0
+- uses: peterxcli/gh-contribution-histogram-action@v1.2
   with:
     targets: 'username,owner/repo [username,owner/repo ...]'
     github_token: ${{ secrets.GITHUB_TOKEN }}
     output_dir: 'path/to/output'  # Optional, defaults to current directory
+    exclude_authored_from_reviewed: true  # Optional, defaults to false
 ```
 
 ### Inputs
@@ -17,6 +18,7 @@ A GitHub Action that generates contribution histograms showing the number of pul
 - `targets`: Comma-separated list of targets in the format `username,owner/repo`. Multiple targets can be specified with spaces.
 - `github_token`: GitHub token for API access. Required for authentication.
 - `output_dir`: Directory where the generated PNG files will be saved. Optional, defaults to the current directory.
+- `exclude_authored_from_reviewed`: Whether to exclude PRs authored by the user from the reviewed count. Optional, defaults to `false`.
 
 ### Example
 
@@ -37,7 +39,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       
-      - uses: peterxcli/gh-contribution-histogram-action@v1.0
+      - uses: peterxcli/gh-contribution-histogram-action@v1.2
         with:
           targets: ${{ github.event.inputs.targets }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
