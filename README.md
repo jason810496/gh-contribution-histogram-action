@@ -5,7 +5,7 @@ A GitHub Action that generates contribution histograms showing the number of pul
 ## Usage
 
 ```yaml
-- uses: peterxcli/oss-contribution-histogram@v1
+- uses: peterxcli/gh-contribution-histogram-action@v1.0
   with:
     targets: 'username,owner/repo [username,owner/repo ...]'
     github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -37,7 +37,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       
-      - uses: peterxcli/oss-contribution-histogram@v1
+      - uses: peterxcli/gh-contribution-histogram-action@v1.0
         with:
           targets: ${{ github.event.inputs.targets }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
