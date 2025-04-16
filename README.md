@@ -57,6 +57,10 @@ Each histogram shows:
 - Total counts for both authored and reviewed PRs
 - Monthly breakdown of contributions
 
+Example:
+
+![peterxcli-apache-ozone-contribution-histogram](https://github.com/peterxcli/peterxcli/blob/9d43b2fef5752ac2599002879c977b00ad04abdd/histograms/peterxcli-apache-ozone-contribution-histogram.png)
+
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
