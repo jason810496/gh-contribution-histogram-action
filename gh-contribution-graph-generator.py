@@ -7,10 +7,15 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import requests
 from tqdm import tqdm
+import click
 
 
 def generate_contribution_histogram(
-    username: str, repo_owner: str, repo_name: str, output_dir: str = ".", exclude_authored_from_reviewed: bool = False
+    username: str,
+    repo_owner: str,
+    repo_name: str,
+    output_dir: str = ".",
+    exclude_authored_from_reviewed: bool = False,
 ):
     """
     Generate a contribution histogram for a user's PRs in a specific repository.
@@ -117,9 +122,7 @@ def generate_contribution_histogram(
     reviewed_query = f"repo:{repo_owner}/{repo_name} is:pr reviewed-by:{username}"
     if exclude_authored_from_reviewed:
         reviewed_query += f" -author:{username}"
-    reviewed_variables = {
-        "searchQuery": reviewed_query
-    }
+    reviewed_variables = {"searchQuery": reviewed_query}
     reviewed_prs = fetch_prs_with_cursor(
         prs_query, reviewed_variables, "Fetching reviewed PRs"
     )
@@ -200,65 +203,57 @@ def generate_contribution_histogram(
     print(f"\nContribution histogram saved as: {output_filename}")
 
 
-if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print("Usage: python gh-contribution-graph-generator.py --target <username,owner/repo> [--exclude-authored-from-reviewed]")
-        print(
-            "Example: python gh-contribution-graph-generator.py --target peterxcli,apache/ozone --exclude-authored-from-reviewed"
-        )
-        sys.exit(1)
+@click.command()
+@click.option(
+    "--exclude-authored-from-reviewed",
+    is_flag=True,
+    help="Exclude PRs authored by the user from the reviewed count.",
+)
+@click.option(
+    "--targets",
+    required=True,
+    help="Target(s) in the format username,owner/repo. Multiple targets can be separated by spaces.",
+)
+@click.option(
+    "--output-dir", default=".", help="Directory to save the output PNG file."
+)
+def main(exclude_authored_from_reviewed, targets, output_dir):
+    """
+    CLI entry point for generating contribution histograms.
 
-
-    # Parse command line arguments
-    exclude_authored_from_reviewed = False
-    targets = None
-    output_dir = "."
-
-    i = 1
-    while i < len(sys.argv):
-        if sys.argv[i] == "--exclude-authored-from-reviewed":
-            exclude_authored_from_reviewed = True
-            i += 1
-        elif sys.argv[i] == "--targets":
-            if i + 1 >= len(sys.argv):
-                print("Error: --target requires a value")
-                sys.exit(1)
-            target = sys.argv[i + 1]
-            i += 2
-        elif sys.argv[i] == "--output-dir":
-            if i + 1 >= len(sys.argv):
-                print("Error: --output-dir requires a value")
-                sys.exit(1)
-            output_dir = sys.argv[i + 1]
-            i += 2
-        else:
-            print(f"Error: Unknown option {sys.argv[i]}")
-            sys.exit(1)
-
-    if not target:
-        print("Error: --target is required")
-        sys.exit(1)
-
+    Args:
+        exclude_authored_from_reviewed (bool): Whether to exclude PRs authored by the user from the reviewed count.
+        targets (str): Target(s) in the format username,owner/repo.
+        output_dir (str): Directory to save the output PNG file.
+    """
     parsed_targets = []
-    # Parse targets
     try:
-        target_arr = target.split(" ")
+        target_arr = targets.split(" ")
         for target in target_arr:
             username, repo = target.split(",")
             repo_owner, repo_name = repo.split("/")
             parsed_targets.append((username, repo_owner, repo_name))
     except ValueError as e:
-        print(f"Error parsing target '{target}': {str(e)}")
-        print("Expected format: username,owner/repo")
-        sys.exit(1)
+        raise click.BadParameter(
+            f"Error parsing target '{targets}': {str(e)}. Expected format: username,owner/repo"
+        )
 
     for target in parsed_targets:
         try:
             generate_contribution_histogram(
-                target[0], target[1], target[2], output_dir, exclude_authored_from_reviewed
+                target[0],
+                target[1],
+                target[2],
+                output_dir,
+                exclude_authored_from_reviewed,
             )
         except Exception as e:
-            print(
-                f"Error generating histogram for {target[0]} in {target[1]}/{target[2]}: {str(e)}"
+            click.echo(
+                f"Error generating histogram for {target[0]} in {target[1]}/{target[2]}: {str(e)}",
+                err=True,
             )
             sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()
