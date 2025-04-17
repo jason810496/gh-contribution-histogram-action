@@ -14,6 +14,7 @@ def render_contribution_svg(
     authored_values: list,
     reviewed_values: list,
     output_dir: str = ".",
+    background_color: str = "#f0f1f6",
     authored_color: str = "skyblue",
     reviewed_color: str = "lightcoral",
 ):
@@ -28,6 +29,7 @@ def render_contribution_svg(
         authored_values (list): List of authored PR counts per month
         reviewed_values (list): List of reviewed PR counts per month
         output_dir (str): Directory to save the output SVG file
+        background_color (str): Background color of the SVG
         authored_color (str): Color for authored PRs line and points
         reviewed_color (str): Color for reviewed PRs line and points
     """
@@ -57,6 +59,7 @@ def render_contribution_svg(
         total_reviewed=total_reviewed,
         max_authored_value=max_authored_value,
         max_reviewed_value=max_reviewed_value,
+        background_color=background_color,
         authored_color=authored_color,
         reviewed_color=reviewed_color,
     )
