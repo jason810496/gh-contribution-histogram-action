@@ -9,11 +9,6 @@ import requests
 from tqdm import tqdm
 import click
 import matplotlib.style as mplstyle
-from scipy.interpolate import make_interp_spline
-import numpy as np
-
-# Define a global constant for line smoothness
-LINE_SMOOTHNESS = 100  # Adjust this value to control the smoothness of the line
 
 
 def generate_contribution_histogram(
@@ -159,29 +154,21 @@ def generate_contribution_histogram(
     mplstyle.use("seaborn-v0_8-darkgrid")
     plt.figure(figsize=(12, 6))
 
-    # Interpolate data for smoother lines
-    x_authored = np.arange(len(merged_df["month"]))
-    y_authored = merged_df["authored_count"]
-    x_smooth = np.linspace(x_authored.min(), x_authored.max(), LINE_SMOOTHNESS)
-    y_smooth = make_interp_spline(x_authored, y_authored)(x_smooth)
-
-    x_reviewed = np.arange(len(merged_df["month"]))
-    y_reviewed = merged_df["reviewed_count"]
-    y_reviewed_smooth = make_interp_spline(x_reviewed, y_reviewed)(x_smooth)
-
-    # Plot smoother lines
+    # Plot lines
     plt.plot(
-        x_smooth,
-        y_smooth,
+        merged_df["month"],
+        merged_df["authored_count"],
         label=f"PRs Authored (Total: {total_authored:,})",
         color="skyblue",
+        marker="o",
         linewidth=2,
     )
     plt.plot(
-        x_smooth,
-        y_reviewed_smooth,
+        merged_df["month"],
+        merged_df["reviewed_count"],
         label=f"PRs Reviewed (Total: {total_reviewed:,})",
         color="lightcoral",
+        marker="o",
         linewidth=2,
     )
 
@@ -204,11 +191,7 @@ def generate_contribution_histogram(
     plt.xlabel("Month")
     plt.ylabel("Number of Pull Requests")
     plt.title(f"Contribution History of {username} in {repo_owner}/{repo_name}")
-    plt.xticks(
-        ticks=np.arange(len(merged_df["month"])),
-        labels=merged_df["month"].dt.strftime("%b %Y"),
-        rotation=45,
-    )
+    plt.xticks(rotation=45)
     plt.legend()
     plt.tight_layout()
 
