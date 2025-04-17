@@ -114,7 +114,7 @@ def get_themes() -> dict[str, Theme]:
 
     # set cache
     with open(THEME_CACHE_JSON, "w") as f:
-        json.dump({k: v._asdict() for k, v in result.items()}, f, indent=4)
+        json.dump({k: v.__dict__ for k, v in result.items()}, f, indent=4)
         print(f"Cached themes to {THEME_CACHE_JSON}")
     # return the themes
     print(f"Fetched {len(result)} themes from {THEME_URI}")
