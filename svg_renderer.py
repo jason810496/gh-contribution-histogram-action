@@ -1,9 +1,9 @@
-import os
-import sys
 from pathlib import Path
+
 import pandas as pd
 from jinja2 import Environment, FileSystemLoader
-from datetime import datetime
+
+from themes import Theme
 
 
 def render_contribution_svg(
@@ -13,10 +13,8 @@ def render_contribution_svg(
     months: list,
     authored_values: list,
     reviewed_values: list,
+    theme: Theme,
     output_dir: str = ".",
-    background_color: str = "#f0f1f6",
-    authored_color: str = "skyblue",
-    reviewed_color: str = "lightcoral",
 ):
     """
     Generate an SVG contribution histogram using the Jinja template.
@@ -59,9 +57,10 @@ def render_contribution_svg(
         total_reviewed=total_reviewed,
         max_authored_value=max_authored_value,
         max_reviewed_value=max_reviewed_value,
-        background_color=background_color,
-        authored_color=authored_color,
-        reviewed_color=reviewed_color,
+        background_color=theme.background_color,
+        authored_color=theme.title_color,
+        reviewed_color=theme.icon_color,
+        text_color=theme.text_color,
     )
 
     # Save the rendered SVG to a file
@@ -74,50 +73,6 @@ def render_contribution_svg(
     print(f"\nContribution histogram SVG saved as: {output_filename}")
 
     return str(output_filename)
-
-
-def convert_dataframe_to_svg(
-    username: str,
-    repo_owner: str,
-    repo_name: str,
-    data_df: pd.DataFrame,
-    output_dir: str = ".",
-    authored_color: str = "skyblue",
-    reviewed_color: str = "lightcoral",
-):
-    """
-    Convert a pandas DataFrame to an SVG using the Jinja template.
-
-    Args:
-        username (str): GitHub username
-        repo_owner (str): Owner of the repository
-        repo_name (str): Name of the repository
-        data_df (pd.DataFrame): DataFrame with 'month', 'authored_count', 'reviewed_count' columns
-        output_dir (str): Directory to save the output SVG file
-        authored_color (str): Color for authored PRs line and points
-        reviewed_color (str): Color for reviewed PRs line and points
-    """
-    # Ensure the dataframe is sorted by month
-    data_df = data_df.sort_values("month")
-
-    # Format month strings
-    months = [dt.strftime("%Y-%m") for dt in data_df["month"]]
-
-    # Get values
-    authored_values = data_df["authored_count"].tolist()
-    reviewed_values = data_df["reviewed_count"].tolist()
-
-    return render_contribution_svg(
-        username=username,
-        repo_owner=repo_owner,
-        repo_name=repo_name,
-        months=months,
-        authored_values=authored_values,
-        reviewed_values=reviewed_values,
-        output_dir=output_dir,
-        authored_color=authored_color,
-        reviewed_color=reviewed_color,
-    )
 
 
 if __name__ == "__main__":

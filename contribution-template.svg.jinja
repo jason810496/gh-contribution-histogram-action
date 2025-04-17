@@ -47,24 +47,24 @@
     <!-- Y-axis numbers -->
     {% for i in range(grid_lines + 1) %}
         {% set y_pos = 550 - (450 * i / grid_lines) %}
-        <text x="1112" y="{{ y_pos + 5 }}" font-family="Arial" font-size="14" text-anchor="start">{{ (max_y_value * i / grid_lines)|int }}</text>
+        <text x="1112" y="{{ y_pos + 5 }}" font-family="Arial" font-size="14" text-anchor="start" fill="{{ text_color }}">{{ (max_y_value * i / grid_lines)|int }}</text>
     {% endfor %}
 
     <!-- Chart title -->
-    <text x="600" y="50" font-family="Arial" font-size="20" text-anchor="middle">
+    <text x="600" y="50" font-family="Arial" font-size="20" text-anchor="middle" fill="{{ text_color }}">
         Contribution History of <tspan font-weight="bold">{{ username }}</tspan> in <tspan font-weight="bold">{{ repo_owner }}/{{ repo_name }}</tspan>
     </text>
     
     <!-- X-axis labels (months) -->
     {% for i in range(months|length) %}
         {% set x_pos = 100 + (1000 * i / (months|length - 1)) if months|length > 1 else 550 %}
-        <text x="{{ x_pos }}" y="580" font-family="Arial" font-size="14" text-anchor="middle" transform="rotate(0, {{ x_pos }}, 580)">
+        <text x="{{ x_pos }}" y="580" font-family="Arial" font-size="14" text-anchor="middle" transform="rotate(0, {{ x_pos }}, 580)" fill="{{ text_color }}">
             {{ months[i] }}
         </text>
     {% endfor %}
     
     <!-- Y-axis label -->
-    <text x="85" y="325" font-family="Arial" font-size="16" text-anchor="middle" transform="rotate(-90, 85, 325)" font-weight="bold">
+    <text x="85" y="325" font-family="Arial" font-size="16" text-anchor="middle" transform="rotate(-90, 85, 325)" font-weight="bold" fill="{{ text_color }}">
         Number of Pull Requests
     </text>
     
@@ -114,18 +114,18 @@
         
     <!-- Authored legend item -->
     <g opacity="0">
-        <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="0s" fill="freeze" />
+        <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="1.5s" fill="freeze" />
         <rect x="130" y="115" width="170" height="25" rx="5" ry="5" fill="{{ authored_color }}" fill-opacity="0.3" />
-        <text x="140" y="132" font-family="Arial" font-size="14">
+        <text x="140" y="132" font-family="Arial" font-size="14" fill="{{ text_color }}">
             Total PRs Authored: <tspan font-weight="bold">{{ total_authored }}</tspan>
         </text>
     </g>
     
     <!-- Reviewed legend item -->
     <g opacity="0">
-        <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="0.5s" fill="freeze" />
+        <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="2.5s" fill="freeze" />
         <rect x="130" y="145" width="170" height="25" rx="5" ry="5" fill="{{ reviewed_color }}" fill-opacity="0.3" />
-        <text x="140" y="162" font-family="Arial" font-size="14">
+        <text x="140" y="162" font-family="Arial" font-size="14" fill="{{ text_color }}">
             Total PRs Reviewed: <tspan font-weight="bold">{{ total_reviewed }}</tspan>
         </text>
     </g>

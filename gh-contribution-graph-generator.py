@@ -3,18 +3,20 @@ import sys
 from datetime import datetime
 from pathlib import Path
 
-import matplotlib.pyplot as plt
-import pandas as pd
-import requests
-from tqdm import tqdm
 import click
-import matplotlib.style as mplstyle
+import pandas as pd
+from tqdm import tqdm
+import requests
+
+from svg_renderer import render_contribution_svg
+from themes import THEME_URI, Theme, get_themes
 
 
 def generate_contribution_histogram(
     username: str,
     repo_owner: str,
     repo_name: str,
+    theme: Theme,
     output_dir: str = ".",
     exclude_authored_from_reviewed: bool = False,
 ):
@@ -27,6 +29,7 @@ def generate_contribution_histogram(
         repo_name (str): Name of the repository
         output_dir (str): Directory to save the output PNG file
         exclude_authored_from_reviewed (bool): Whether to exclude PRs authored by the user from the reviewed count
+        theme (Theme): Theme object for styling the SVG
     """
     # GitHub API setup
     GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
@@ -146,87 +149,73 @@ def generate_contribution_histogram(
     # Merge DataFrames
     merged_df = pd.merge(authored_df, reviewed_df, on="month", how="outer").fillna(0)
     merged_df["month"] = pd.to_datetime(merged_df["month"], format="%Y-%m")
+
+    # Ensure the dataframe is sorted by month
     merged_df = merged_df.sort_values("month")
-    total_authored = merged_df["authored_count"].sum()
-    total_reviewed = merged_df["reviewed_count"].sum()
 
-    # Plot histogram
-    mplstyle.use("seaborn-v0_8-darkgrid")
-    plt.figure(figsize=(12, 6))
+    # Format month strings
+    months = [dt.strftime("%Y-%m") for dt in merged_df["month"]]
 
-    # Plot lines
-    plt.plot(
-        merged_df["month"],
-        merged_df["authored_count"],
-        label=f"PRs Authored (Total: {total_authored:,})",
-        color="skyblue",
-        marker="o",
-        linewidth=2,
-    )
-    plt.plot(
-        merged_df["month"],
-        merged_df["reviewed_count"],
-        label=f"PRs Reviewed (Total: {total_reviewed:,})",
-        color="lightcoral",
-        marker="o",
-        linewidth=2,
-    )
+    # Get values
+    authored_values = merged_df["authored_count"].tolist()
+    reviewed_values = merged_df["reviewed_count"].tolist()
 
-    # Add total annotations
-    plt.annotate(
-        f"Total Authored: {total_authored:,}",
-        xy=(0.02, 0.95),
-        xycoords="axes fraction",
-        fontsize=10,
-        bbox=dict(boxstyle="round,pad=0.3", fc="skyblue", alpha=0.3),
+    render_contribution_svg(
+        username=username,
+        repo_owner=repo_owner,
+        repo_name=repo_name,
+        months=months,
+        authored_values=authored_values,
+        reviewed_values=reviewed_values,
+        theme=theme,
     )
-    plt.annotate(
-        f"Total Reviewed: {total_reviewed:,}",
-        xy=(0.02, 0.90),
-        xycoords="axes fraction",
-        fontsize=10,
-        bbox=dict(boxstyle="round,pad=0.3", fc="lightcoral", alpha=0.3),
-    )
-
-    plt.xlabel("Month")
-    plt.ylabel("Number of Pull Requests")
-    plt.title(f"Contribution History of {username} in {repo_owner}/{repo_name}")
-    plt.xticks(rotation=45)
-    plt.legend()
-    plt.tight_layout()
-
-    # Save the plot
-    output_filename = (
-        output_path / f"{username}-{repo_owner}-{repo_name}-contribution-histogram.png"
-    )
-    plt.savefig(output_filename)
-    print(f"\nContribution histogram saved as: {output_filename}")
 
 
 @click.command()
 @click.option(
-    "--exclude-authored-from-reviewed",
-    is_flag=True,
-    help="Exclude PRs authored by the user from the reviewed count.",
-)
-@click.option(
     "--targets",
     required=True,
-    help="Target(s) in the format username,owner/repo. Multiple targets can be separated by spaces.",
+    help="Space-separated list of targets in the format 'username,owner/repo'",
 )
 @click.option(
-    "--output-dir", default=".", help="Directory to save the output PNG file."
+    "--output-dir",
+    default=".",
+    help="Directory to save the output PNG files",
 )
-def main(exclude_authored_from_reviewed, targets, output_dir):
+@click.option(
+    "--exclude-authored-from-reviewed",
+    is_flag=True,
+    help="Exclude PRs authored by the user from the reviewed count",
+)
+@click.option(
+    "--theme",
+    default="default",
+    help=f"Theme for the SVG. Available themes: {THEME_URI}. Default: 'default'",
+)
+def main(
+    targets,
+    output_dir,
+    exclude_authored_from_reviewed,
+    theme,
+):
     """
-    CLI entry point for generating contribution histograms.
+    Generate contribution histograms for multiple targets.
 
     Args:
-        exclude_authored_from_reviewed (bool): Whether to exclude PRs authored by the user from the reviewed count.
-        targets (str): Target(s) in the format username,owner/repo.
-        output_dir (str): Directory to save the output PNG file.
+        targets (str): Space-separated list of targets in the format 'username,owner/repo'
+        output_dir (str): Directory to save the output PNG files
+        exclude_authored_from_reviewed (bool): Whether to exclude PRs authored by the user from the reviewed count
+        authored_color (str): Color for authored PRs line and points
+        reviewed_color (str): Color for reviewed PRs line and points
     """
     parsed_targets = []
+    available_themes = get_themes()
+    theme: Theme = available_themes.get(theme)
+    if not theme:
+        raise click.BadParameter(
+            f"Theme '{theme}' not found. Available themes: {available_themes.keys()}"
+        )
+
     try:
         target_arr = targets.split(" ")
         for target in target_arr:
@@ -244,6 +233,7 @@ def main(exclude_authored_from_reviewed, targets, output_dir):
                 target[0],
                 target[1],
                 target[2],
+                theme,
                 output_dir,
                 exclude_authored_from_reviewed,
             )
