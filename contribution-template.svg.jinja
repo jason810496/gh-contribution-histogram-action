@@ -113,14 +113,20 @@
     {% endfor %}
         
     <!-- Authored legend item -->
-    <rect x="130" y="115" width="200" height="25" rx="5" ry="5" fill="{{ authored_color }}" fill-opacity="0.3" />
-    <text x="140" y="132" font-family="Arial" font-size="14">
-        Total PRs Authored: <tspan font-weight="bold">{{ total_authored }}</tspan>
-    </text>
+    <g opacity="0">
+        <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="0s" fill="freeze" />
+        <rect x="130" y="115" width="170" height="25" rx="5" ry="5" fill="{{ authored_color }}" fill-opacity="0.3" />
+        <text x="140" y="132" font-family="Arial" font-size="14">
+            Total PRs Authored: <tspan font-weight="bold">{{ total_authored }}</tspan>
+        </text>
+    </g>
     
     <!-- Reviewed legend item -->
-    <rect x="130" y="145" width="200" height="25" rx="5" ry="5" fill="{{ reviewed_color }}" fill-opacity="0.3" />
-    <text x="140" y="162" font-family="Arial" font-size="14">
-        Total PRs Reviewed: <tspan font-weight="bold">{{ total_reviewed }}</tspan>
-    </text>
+    <g opacity="0">
+        <animate attributeName="opacity" from="0" to="1" dur="0.5s" begin="0.5s" fill="freeze" />
+        <rect x="130" y="145" width="170" height="25" rx="5" ry="5" fill="{{ reviewed_color }}" fill-opacity="0.3" />
+        <text x="140" y="162" font-family="Arial" font-size="14">
+            Total PRs Reviewed: <tspan font-weight="bold">{{ total_reviewed }}</tspan>
+        </text>
+    </g>
 </svg>
