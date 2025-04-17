@@ -1,9 +1,10 @@
 from pathlib import Path
 
-import pandas as pd
 from jinja2 import Environment, FileSystemLoader
 
 from themes import Theme
+
+CURVE_RATIO = 0.25
 
 
 def render_contribution_svg(
@@ -62,6 +63,7 @@ def render_contribution_svg(
         authored_color=theme.title_color,
         reviewed_color=theme.icon_color,
         text_color=theme.text_color,
+        curve_ratio=CURVE_RATIO,
     )
 
     # Save the rendered SVG to a file

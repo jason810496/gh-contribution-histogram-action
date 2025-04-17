@@ -69,27 +69,41 @@
     </text>
     
     <!-- Plot authored PRs line -->
-    <polyline
+    <path
         fill="none"
         stroke="{{ authored_color }}"
         stroke-width="3"
         class="animated-line"
-        points="{% for i in range(months|length) %}
+        d="{% for i in range(months|length) %}
             {% set x_pos = 100 + (1000 * i / (months|length - 1)) if months|length > 1 else 550 %}
             {% set y_pos = 550 - (450 * authored_values[i] / max_y_value) if max_y_value > 0 else 550 %}
-            {{ x_pos }},{{ y_pos }} {% endfor %}"
+            {% if i == 0 %}M{{ x_pos }},{{ y_pos }}
+            {% else %}
+                {% set prev_x_pos = 100 + (1000 * (i-1) / (months|length - 1)) if months|length > 1 else 550 %}
+                {% set prev_y_pos = 550 - (450 * authored_values[i-1] / max_y_value) if max_y_value > 0 else 550 %}
+                {% set control_x1 = prev_x_pos + (x_pos - prev_x_pos) * curve_ratio %}
+                {% set control_x2 = x_pos - (x_pos - prev_x_pos) * curve_ratio %}
+                C{{ control_x1 }},{{ prev_y_pos }} {{ control_x2 }},{{ y_pos }} {{ x_pos }},{{ y_pos }}
+            {% endif %}{% endfor %}"
     />
     
     <!-- Plot reviewed PRs line -->
-    <polyline
+    <path
         fill="none"
         stroke="{{ reviewed_color }}"
         stroke-width="3"
         class="animated-line"
-        points="{% for i in range(months|length) %}
+        d="{% for i in range(months|length) %}
             {% set x_pos = 100 + (1000 * i / (months|length - 1)) if months|length > 1 else 550 %}
             {% set y_pos = 550 - (450 * reviewed_values[i] / max_y_value) if max_y_value > 0 else 550 %}
-            {{ x_pos }},{{ y_pos }} {% endfor %}"
+            {% if i == 0 %}M{{ x_pos }},{{ y_pos }}
+            {% else %}
+                {% set prev_x_pos = 100 + (1000 * (i-1) / (months|length - 1)) if months|length > 1 else 550 %}
+                {% set prev_y_pos = 550 - (450 * reviewed_values[i-1] / max_y_value) if max_y_value > 0 else 550 %}
+                {% set control_x1 = prev_x_pos + (x_pos - prev_x_pos) * curve_ratio %}
+                {% set control_x2 = x_pos - (x_pos - prev_x_pos) * curve_ratio %}
+                C{{ control_x1 }},{{ prev_y_pos }} {{ control_x2 }},{{ y_pos }} {{ x_pos }},{{ y_pos }}
+            {% endif %}{% endfor %}"
     />
     
     <!-- Authored data points with values -->
