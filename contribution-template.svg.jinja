@@ -16,7 +16,6 @@
         {% for i in range(grid_lines + 1) %}
             {% set y_pos = 550 - (450 * i / grid_lines) %}
             <line x1="100" y1="{{ y_pos }}" x2="1100" y2="{{ y_pos }}" stroke-opacity="0.6"/>
-            <text x="70" y="{{ y_pos + 5 }}" font-family="Arial" font-size="14" text-anchor="end" fill="#333333" font-weight="bold">{{ (max_y_value * i / grid_lines)|int }}</text>
         {% endfor %}
         
         {% for i in range(months|length) %}
@@ -25,9 +24,15 @@
         {% endfor %}
     </g>
 
+    <!-- Y-axis numbers -->
+    {% for i in range(grid_lines + 1) %}
+        {% set y_pos = 550 - (450 * i / grid_lines) %}
+        <text x="1112" y="{{ y_pos + 5 }}" font-family="Arial" font-size="14" text-anchor="start">{{ (max_y_value * i / grid_lines)|int }}</text>
+    {% endfor %}
+
     <!-- Chart title -->
-    <text x="600" y="50" font-family="Arial" font-size="20" text-anchor="middle" font-weight="bold">
-        Contribution History of {{ username }} in {{ repo_owner }}/{{ repo_name }}
+    <text x="600" y="50" font-family="Arial" font-size="20" text-anchor="middle">
+        Contribution History of <tspan font-weight="bold">{{ username }}</tspan> in <tspan font-weight="bold">{{ repo_owner }}/{{ repo_name }}</tspan>
     </text>
     
     <!-- X-axis labels (months) -->
@@ -39,7 +44,7 @@
     {% endfor %}
     
     <!-- Y-axis label -->
-    <text x="30" y="325" font-family="Arial" font-size="16" text-anchor="middle" transform="rotate(-90, 30, 325)" font-weight="bold">
+    <text x="85" y="325" font-family="Arial" font-size="16" text-anchor="middle" transform="rotate(-90, 85, 325)" font-weight="bold">
         Number of Pull Requests
     </text>
     
@@ -81,13 +86,13 @@
         
     <!-- Authored legend item -->
     <rect x="130" y="115" width="200" height="25" rx="5" ry="5" fill="{{ authored_color }}" fill-opacity="0.3" />
-    <text x="140" y="132" font-family="Arial" font-size="14" font-weight="bold">
-        Total PRs Authored: {{ total_authored }}
+    <text x="140" y="132" font-family="Arial" font-size="14">
+        Total PRs Authored: <tspan font-weight="bold">{{ total_authored }}</tspan>
     </text>
     
     <!-- Reviewed legend item -->
     <rect x="130" y="145" width="200" height="25" rx="5" ry="5" fill="{{ reviewed_color }}" fill-opacity="0.3" />
-    <text x="140" y="162" font-family="Arial" font-size="14" font-weight="bold">
-        Total PRs Reviewed: {{ total_reviewed }}
+    <text x="140" y="162" font-family="Arial" font-size="14">
+        Total PRs Reviewed: <tspan font-weight="bold">{{ total_reviewed }}</tspan>
     </text>
 </svg>
