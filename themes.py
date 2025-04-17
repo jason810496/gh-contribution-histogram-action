@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from typing import NamedTuple
 import json
 import os
 
@@ -10,7 +9,7 @@ THEME_URI = "https://raw.githubusercontent.com/anuraghazra/github-readme-stats/r
 THEME_CACHE_JSON = "themes.json"
 
 
-class Theme(NamedTuple):
+class Theme:
     """
     A class to represent a theme.
     """
@@ -22,6 +21,22 @@ class Theme(NamedTuple):
     bg_color: str
     background_color: str
     border_color: str | None = None
+
+    def __init__(
+        self,
+        title_color: str,
+        icon_color: str,
+        text_color: str,
+        bg_color: str,
+        background_color: str,
+        border_color: str | None = None,
+    ):
+        self.title_color = title_color
+        self.icon_color = icon_color
+        self.text_color = text_color
+        self.bg_color = bg_color
+        self.background_color = background_color
+        self.border_color = border_color
 
 
 def get_themes() -> dict[str, Theme]:

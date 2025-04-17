@@ -192,11 +192,21 @@ def generate_contribution_histogram(
     default="default",
     help=f"Theme for the SVG. Available themes: {THEME_URI}. Default: 'default'",
 )
+@click.option(
+    "--authored-color",
+    help="Color for authored PRs line and points",
+)
+@click.option(
+    "--reviewed-color",
+    help="Color for reviewed PRs line and points",
+)
 def main(
     targets,
     output_dir,
     exclude_authored_from_reviewed,
     theme,
+    authored_color,
+    reviewed_color,
 ):
     """
     Generate contribution histograms for multiple targets.
@@ -205,6 +215,7 @@ def main(
         targets (str): Space-separated list of targets in the format 'username,owner/repo'
         output_dir (str): Directory to save the output PNG files
         exclude_authored_from_reviewed (bool): Whether to exclude PRs authored by the user from the reviewed count
+        theme (str): Theme for the SVG
         authored_color (str): Color for authored PRs line and points
         reviewed_color (str): Color for reviewed PRs line and points
     """
@@ -215,6 +226,11 @@ def main(
         raise click.BadParameter(
             f"Theme '{theme}' not found. Available themes: {available_themes.keys()}"
         )
+    # override theme colors if provided authored_color or reviewed_color
+    if authored_color:
+        theme.title_color = f"#{authored_color}"
+    if reviewed_color:
+        theme.icon_color = f"#{reviewed_color}"
 
     try:
         target_arr = targets.split(" ")

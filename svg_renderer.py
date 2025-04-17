@@ -58,6 +58,7 @@ def render_contribution_svg(
         max_authored_value=max_authored_value,
         max_reviewed_value=max_reviewed_value,
         background_color=theme.background_color,
+        title_color=theme.title_color,
         authored_color=theme.title_color,
         reviewed_color=theme.icon_color,
         text_color=theme.text_color,
@@ -96,5 +97,13 @@ if __name__ == "__main__":
         months=test_months,
         authored_values=test_authored,
         reviewed_values=test_reviewed,
+        theme=Theme(
+            title_color="#000000",
+            icon_color="#000000",
+            text_color="#000000",
+            background_color="#FFFFFF",
+            border_color="#CCCCCC",
+            bg_color="gray",
+        ),
         output_dir=".",
     )
