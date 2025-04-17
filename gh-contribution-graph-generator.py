@@ -8,6 +8,12 @@ import pandas as pd
 import requests
 from tqdm import tqdm
 import click
+import matplotlib.style as mplstyle
+from scipy.interpolate import make_interp_spline
+import numpy as np
+
+# Define a global constant for line smoothness
+LINE_SMOOTHNESS = 100  # Adjust this value to control the smoothness of the line
 
 
 def generate_contribution_histogram(
@@ -146,30 +152,37 @@ def generate_contribution_histogram(
     merged_df = pd.merge(authored_df, reviewed_df, on="month", how="outer").fillna(0)
     merged_df["month"] = pd.to_datetime(merged_df["month"], format="%Y-%m")
     merged_df = merged_df.sort_values("month")
+    total_authored = merged_df["authored_count"].sum()
+    total_reviewed = merged_df["reviewed_count"].sum()
 
     # Plot histogram
+    mplstyle.use("seaborn-v0_8-darkgrid")
     plt.figure(figsize=(12, 6))
-    bar_width = 0.35
-    x = range(len(merged_df["month"]))
 
-    # Calculate totals
-    total_authored = int(sum(merged_df["authored_count"]))
-    total_reviewed = int(sum(merged_df["reviewed_count"]))
+    # Interpolate data for smoother lines
+    x_authored = np.arange(len(merged_df["month"]))
+    y_authored = merged_df["authored_count"]
+    x_smooth = np.linspace(x_authored.min(), x_authored.max(), LINE_SMOOTHNESS)
+    y_smooth = make_interp_spline(x_authored, y_authored)(x_smooth)
 
-    # Plot bars
-    plt.bar(
-        [i - bar_width / 2 for i in x],
-        merged_df["authored_count"],
-        bar_width,
+    x_reviewed = np.arange(len(merged_df["month"]))
+    y_reviewed = merged_df["reviewed_count"]
+    y_reviewed_smooth = make_interp_spline(x_reviewed, y_reviewed)(x_smooth)
+
+    # Plot smoother lines
+    plt.plot(
+        x_smooth,
+        y_smooth,
         label=f"PRs Authored (Total: {total_authored:,})",
         color="skyblue",
+        linewidth=2,
     )
-    plt.bar(
-        [i + bar_width / 2 for i in x],
-        merged_df["reviewed_count"],
-        bar_width,
+    plt.plot(
+        x_smooth,
+        y_reviewed_smooth,
         label=f"PRs Reviewed (Total: {total_reviewed:,})",
         color="lightcoral",
+        linewidth=2,
     )
 
     # Add total annotations
@@ -191,7 +204,11 @@ def generate_contribution_histogram(
     plt.xlabel("Month")
     plt.ylabel("Number of Pull Requests")
     plt.title(f"Contribution History of {username} in {repo_owner}/{repo_name}")
-    plt.xticks(x, merged_df["month"].dt.strftime("%Y-%m"), rotation=45)
+    plt.xticks(
+        ticks=np.arange(len(merged_df["month"])),
+        labels=merged_df["month"].dt.strftime("%b %Y"),
+        rotation=45,
+    )
     plt.legend()
     plt.tight_layout()
 
