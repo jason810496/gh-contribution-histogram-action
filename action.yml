@@ -1,6 +1,6 @@
 name: 'OSS Contribution Histogram Generator'
 description: 'Generate contribution histograms for GitHub users across repositories'
-author: 'peterxcli'
+author: 'peterxcli, jason810496'
 
 inputs:
   targets:
@@ -17,6 +17,16 @@ inputs:
     description: 'Whether to exclude PRs authored by the user from the reviewed count'
     required: false
     default: 'false'
+  theme:
+    description: 'Theme for the histogram (default: "default")'
+    required: true
+    default: 'default'
+  authored_color:
+    description: 'Color for authored contributions (default: based on theme)'
+    required: false
+  reviewed_color:
+    description: 'Color for reviewed contributions (default: based on theme)'
+    required: false
 
 runs:
   using: "composite"
@@ -41,3 +51,6 @@ runs:
           --targets "${{ inputs.targets }}" \
           --output-dir "${{ inputs.output_dir }}" \
           ${{ inputs.exclude_authored_from_reviewed == 'true' && '--exclude-authored-from-reviewed' || '' }} 
+          --theme "${{ inputs.theme }}" \
+          ${{ inputs.authored_color && '--authored-color' || '' }} "${{ inputs.authored_color }}" \
+          ${{ inputs.reviewed_color && '--reviewed-color' || '' }} "${{ inputs.reviewed_color }}" \

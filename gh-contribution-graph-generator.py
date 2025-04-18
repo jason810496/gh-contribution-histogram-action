@@ -3,14 +3,22 @@ import sys
 from datetime import datetime
 from pathlib import Path
 
-import matplotlib.pyplot as plt
+import click
 import pandas as pd
-import requests
 from tqdm import tqdm
+import requests
+
+from svg_renderer import render_contribution_svg
+from themes import THEME_URI, Theme, get_themes
 
 
 def generate_contribution_histogram(
-    username: str, repo_owner: str, repo_name: str, output_dir: str = ".", exclude_authored_from_reviewed: bool = False
+    username: str,
+    repo_owner: str,
+    repo_name: str,
+    theme: Theme,
+    output_dir: str = ".",
+    exclude_authored_from_reviewed: bool = False,
 ):
     """
     Generate a contribution histogram for a user's PRs in a specific repository.
@@ -21,6 +29,7 @@ def generate_contribution_histogram(
         repo_name (str): Name of the repository
         output_dir (str): Directory to save the output PNG file
         exclude_authored_from_reviewed (bool): Whether to exclude PRs authored by the user from the reviewed count
+        theme (Theme): Theme object for styling the SVG
     """
     # GitHub API setup
     GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
@@ -117,9 +126,7 @@ def generate_contribution_histogram(
     reviewed_query = f"repo:{repo_owner}/{repo_name} is:pr reviewed-by:{username}"
     if exclude_authored_from_reviewed:
         reviewed_query += f" -author:{username}"
-    reviewed_variables = {
-        "searchQuery": reviewed_query
-    }
+    reviewed_variables = {"searchQuery": reviewed_query}
     reviewed_prs = fetch_prs_with_cursor(
         prs_query, reviewed_variables, "Fetching reviewed PRs"
     )
@@ -142,123 +149,117 @@ def generate_contribution_histogram(
     # Merge DataFrames
     merged_df = pd.merge(authored_df, reviewed_df, on="month", how="outer").fillna(0)
     merged_df["month"] = pd.to_datetime(merged_df["month"], format="%Y-%m")
+
+    # Ensure the dataframe is sorted by month
     merged_df = merged_df.sort_values("month")
 
-    # Plot histogram
-    plt.figure(figsize=(12, 6))
-    bar_width = 0.35
-    x = range(len(merged_df["month"]))
+    # Format month strings
+    months = [dt.strftime("%Y-%m") for dt in merged_df["month"]]
 
-    # Calculate totals
-    total_authored = int(sum(merged_df["authored_count"]))
-    total_reviewed = int(sum(merged_df["reviewed_count"]))
+    # Get values
+    authored_values = merged_df["authored_count"].tolist()
+    reviewed_values = merged_df["reviewed_count"].tolist()
 
-    # Plot bars
-    plt.bar(
-        [i - bar_width / 2 for i in x],
-        merged_df["authored_count"],
-        bar_width,
-        label=f"PRs Authored (Total: {total_authored:,})",
-        color="skyblue",
-    )
-    plt.bar(
-        [i + bar_width / 2 for i in x],
-        merged_df["reviewed_count"],
-        bar_width,
-        label=f"PRs Reviewed (Total: {total_reviewed:,})",
-        color="lightcoral",
+    render_contribution_svg(
+        username=username,
+        repo_owner=repo_owner,
+        repo_name=repo_name,
+        months=months,
+        authored_values=authored_values,
+        reviewed_values=reviewed_values,
+        theme=theme,
     )
 
-    # Add total annotations
-    plt.annotate(
-        f"Total Authored: {total_authored:,}",
-        xy=(0.02, 0.95),
-        xycoords="axes fraction",
-        fontsize=10,
-        bbox=dict(boxstyle="round,pad=0.3", fc="skyblue", alpha=0.3),
-    )
-    plt.annotate(
-        f"Total Reviewed: {total_reviewed:,}",
-        xy=(0.02, 0.90),
-        xycoords="axes fraction",
-        fontsize=10,
-        bbox=dict(boxstyle="round,pad=0.3", fc="lightcoral", alpha=0.3),
-    )
 
-    plt.xlabel("Month")
-    plt.ylabel("Number of Pull Requests")
-    plt.title(f"Contribution History of {username} in {repo_owner}/{repo_name}")
-    plt.xticks(x, merged_df["month"].dt.strftime("%Y-%m"), rotation=45)
-    plt.legend()
-    plt.tight_layout()
+@click.command()
+@click.option(
+    "--targets",
+    required=True,
+    help="Space-separated list of targets in the format 'username,owner/repo'",
+)
+@click.option(
+    "--output-dir",
+    default=".",
+    help="Directory to save the output PNG files",
+)
+@click.option(
+    "--exclude-authored-from-reviewed",
+    is_flag=True,
+    help="Exclude PRs authored by the user from the reviewed count",
+)
+@click.option(
+    "--theme",
+    default="default",
+    help=f"Theme for the SVG. Available themes: {THEME_URI}. Default: 'default'",
+)
+@click.option(
+    "--authored-color",
+    help="Color for authored PRs line and points",
+)
+@click.option(
+    "--reviewed-color",
+    help="Color for reviewed PRs line and points",
+)
+def main(
+    targets,
+    output_dir,
+    exclude_authored_from_reviewed,
+    theme,
+    authored_color,
+    reviewed_color,
+):
+    """
+    Generate contribution histograms for multiple targets.
 
-    # Save the plot
-    output_filename = (
-        output_path / f"{username}-{repo_owner}-{repo_name}-contribution-histogram.png"
-    )
-    plt.savefig(output_filename)
-    print(f"\nContribution histogram saved as: {output_filename}")
-
-
-if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print("Usage: python gh-contribution-graph-generator.py --target <username,owner/repo> [--exclude-authored-from-reviewed]")
-        print(
-            "Example: python gh-contribution-graph-generator.py --target peterxcli,apache/ozone --exclude-authored-from-reviewed"
-        )
-        sys.exit(1)
-
-
-    # Parse command line arguments
-    exclude_authored_from_reviewed = False
-    targets = None
-    output_dir = "."
-
-    i = 1
-    while i < len(sys.argv):
-        if sys.argv[i] == "--exclude-authored-from-reviewed":
-            exclude_authored_from_reviewed = True
-            i += 1
-        elif sys.argv[i] == "--targets":
-            if i + 1 >= len(sys.argv):
-                print("Error: --target requires a value")
-                sys.exit(1)
-            target = sys.argv[i + 1]
-            i += 2
-        elif sys.argv[i] == "--output-dir":
-            if i + 1 >= len(sys.argv):
-                print("Error: --output-dir requires a value")
-                sys.exit(1)
-            output_dir = sys.argv[i + 1]
-            i += 2
-        else:
-            print(f"Error: Unknown option {sys.argv[i]}")
-            sys.exit(1)
-
-    if not target:
-        print("Error: --target is required")
-        sys.exit(1)
-
+    Args:
+        targets (str): Space-separated list of targets in the format 'username,owner/repo'
+        output_dir (str): Directory to save the output PNG files
+        exclude_authored_from_reviewed (bool): Whether to exclude PRs authored by the user from the reviewed count
+        theme (str): Theme for the SVG
+        authored_color (str): Color for authored PRs line and points
+        reviewed_color (str): Color for reviewed PRs line and points
+    """
     parsed_targets = []
-    # Parse targets
+    available_themes = get_themes()
+    theme: Theme = available_themes.get(theme)
+    if not theme:
+        raise click.BadParameter(
+            f"Theme '{theme}' not found. Available themes: {available_themes.keys()}"
+        )
+    # override theme colors if provided authored_color or reviewed_color
+    if authored_color:
+        theme.title_color = f"#{authored_color}"
+    if reviewed_color:
+        theme.icon_color = f"#{reviewed_color}"
+
     try:
-        target_arr = target.split(" ")
+        target_arr = targets.split(" ")
         for target in target_arr:
             username, repo = target.split(",")
             repo_owner, repo_name = repo.split("/")
             parsed_targets.append((username, repo_owner, repo_name))
     except ValueError as e:
-        print(f"Error parsing target '{target}': {str(e)}")
-        print("Expected format: username,owner/repo")
-        sys.exit(1)
+        raise click.BadParameter(
+            f"Error parsing target '{targets}': {str(e)}. Expected format: username,owner/repo"
+        )
 
     for target in parsed_targets:
         try:
             generate_contribution_histogram(
-                target[0], target[1], target[2], output_dir, exclude_authored_from_reviewed
+                target[0],
+                target[1],
+                target[2],
+                theme,
+                output_dir,
+                exclude_authored_from_reviewed,
             )
         except Exception as e:
-            print(
-                f"Error generating histogram for {target[0]} in {target[1]}/{target[2]}: {str(e)}"
+            click.echo(
+                f"Error generating histogram for {target[0]} in {target[1]}/{target[2]}: {str(e)}",
+                err=True,
             )
             sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()
