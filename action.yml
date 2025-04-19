@@ -47,10 +47,10 @@ runs:
       env:
         GITHUB_TOKEN: ${{ inputs.github_token }}
       run: |
-        python ${{ github.action_path }}/gh-contribution-graph-generator.py \
+        cd ${{ github.action_path }} && python gh-contribution-graph-generator.py \
           --targets "${{ inputs.targets }}" \
           --output-dir "${{ inputs.output_dir }}" \
-          ${{ inputs.exclude_authored_from_reviewed == 'true' && '--exclude-authored-from-reviewed' || '' }} 
           --theme "${{ inputs.theme }}" \
+          ${{ inputs.exclude_authored_from_reviewed == 'true' && '--exclude-authored-from-reviewed' || '' }} 
           ${{ inputs.authored_color && '--authored-color' || '' }} "${{ inputs.authored_color }}" \
           ${{ inputs.reviewed_color && '--reviewed-color' || '' }} "${{ inputs.reviewed_color }}" \
