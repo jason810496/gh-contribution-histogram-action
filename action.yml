@@ -46,13 +46,12 @@ runs:
       shell: bash
       env:
         GITHUB_TOKEN: ${{ inputs.github_token }}
+        OUTPUT_DIR: $PWD/${{ inputs.output_dir }}
       run: |
-        export OUTPUT_DIR="$PWD/${{ inputs.output_dir }}"
-        echo "OUTPUT_DIR: $OUTPUT_DIR"
         cd ${{ github.action_path }}
         python gh-contribution-graph-generator.py \
           --targets "${{ inputs.targets }}" \
-          --output-dir "$OUTPUT_DIR" \
+          --output-dir "${{ env.OUTPUT_DIR }}" \
           ${{ inputs.exclude_authored_from_reviewed == 'true' && '--exclude-authored-from-reviewed' || '' }} \
           --theme "${{ inputs.theme }}" \
           ${{ inputs.authored_color && format('--authored-color {0}', inputs.authored_color) || '' }} \
