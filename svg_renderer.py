@@ -73,9 +73,9 @@ def render_contribution_svg(
     with open(output_filename, "w") as f:
         f.write(rendered_svg)
 
-    print(f"\nContribution histogram SVG saved as: {output_filename}")
+    print(f"\nContribution histogram SVG saved as: {output_filename.absolute()}")
 
-    return str(output_filename)
+    return str(output_filename.absolute())
 
 
 if __name__ == "__main__":
