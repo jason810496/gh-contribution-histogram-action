@@ -46,7 +46,7 @@ runs:
       shell: bash
       env:
         GITHUB_TOKEN: ${{ inputs.github_token }}
-        OUTPUT_DIR: $PWD/${{ inputs.output_dir }}
+        OUTPUT_DIR: ${{ github.workspace }}/${{ inputs.output_dir }}
       run: |
         cd ${{ github.action_path }}
         python gh-contribution-graph-generator.py \
