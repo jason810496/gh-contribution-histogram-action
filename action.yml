@@ -51,7 +51,7 @@ runs:
         python gh-contribution-graph-generator.py \
           --targets "${{ inputs.targets }}" \
           --output-dir "${{ inputs.output_dir }}" \
-          ${{ inputs.exclude_authored_from_reviewed == 'true' && '--exclude-authored-from-reviewed' || '' }} 
+          ${{ inputs.exclude_authored_from_reviewed == 'true' && '--exclude-authored-from-reviewed' || '' }} \
           --theme "${{ inputs.theme }}" \
-          ${{ inputs.authored_color && '--authored-color' || '' }} "${{ inputs.authored_color }}" \
-          ${{ inputs.reviewed_color && '--reviewed-color' || '' }} "${{ inputs.reviewed_color }}" \
+          ${{ inputs.authored_color && format('--authored-color {0}', inputs.authored_color) || '' }} \
+          ${{ inputs.reviewed_color && format('--reviewed-color {0}', inputs.reviewed_color) || '' }}
