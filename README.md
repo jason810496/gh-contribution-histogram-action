@@ -1,6 +1,6 @@
-# OSS Contribution Histogram Generator
+# OSS Contribution Graph Generator
 
-A GitHub Action that generates contribution histograms showing the number of pull requests authored and reviewed by a user in specific repositories over time.
+A GitHub Action that generates contribution graph showing the number of pull requests authored and reviewed by a user in specific repositories over time.
 
 ## Usage
 
@@ -39,7 +39,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       
-      - uses: peterxcli/gh-contribution-histogram-action@v1.2
+      - uses: peterxcli/gh-contribution-graph-action@v1.2
         with:
           targets: ${{ github.event.inputs.targets }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -49,7 +49,7 @@ jobs:
 ## Output
 
 The action generates PNG files named in the format:
-`{username}-{repo_owner}-{repo_name}-contribution-histogram.png`
+`{username}-{repo_owner}-{repo_name}-contribution-graph.png`
 
 Each histogram shows:
 - Number of PRs authored by the user (blue bars)
@@ -59,7 +59,7 @@ Each histogram shows:
 
 Example:
 
-![peterxcli-apache-ozone-contribution-histogram](https://github.com/peterxcli/peterxcli/blob/9d43b2fef5752ac2599002879c977b00ad04abdd/histograms/peterxcli-apache-ozone-contribution-histogram.png)
+![peterxcli-apache-ozone-contribution-histogram](https://raw.githubusercontent.com/peterxcli/peterxcli/refs/heads/main/histograms/peterxcli-apache-ozone-contribution-histogram.svg)
 
 ## License
 
