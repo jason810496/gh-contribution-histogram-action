@@ -5,7 +5,7 @@ A GitHub Action that generates contribution graph showing the number of pull req
 ## Usage
 
 ```yaml
-- uses: peterxcli/gh-contribution-histogram-action@v1.2
+- uses: peterxcli/gh-contribution-graph-action@v1.2
   with:
     targets: 'username,owner/repo [username,owner/repo ...]'
     github_token: ${{ secrets.GITHUB_TOKEN }}
