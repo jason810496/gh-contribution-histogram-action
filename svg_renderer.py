@@ -68,7 +68,7 @@ def render_contribution_svg(
 
     # Save the rendered SVG to a file
     output_filename = (
-        output_path / f"{username}-{repo_owner}-{repo_name}-contribution-histogram.svg"
+        output_path / f"{username}-{repo_owner}-{repo_name}-contribution-graph.svg"
     )
     with open(output_filename, "w") as f:
         f.write(rendered_svg)
