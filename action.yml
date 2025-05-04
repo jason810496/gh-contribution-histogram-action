@@ -48,6 +48,7 @@ runs:
         GITHUB_TOKEN: ${{ inputs.github_token }}
         OUTPUT_DIR: ${{ github.workspace }}/${{ inputs.output_dir }}
       run: |
+        echo "output_dir: ${{ env.OUTPUT_DIR }}"
         cd ${{ github.action_path }}
         python gh-contribution-graph-generator.py \
           --targets "${{ inputs.targets }}" \

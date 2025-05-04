@@ -168,6 +168,7 @@ def generate_contribution_histogram(
         authored_values=authored_values,
         reviewed_values=reviewed_values,
         theme=theme,
+        output_dir=output_path,
     )
 
 
@@ -179,7 +180,7 @@ def generate_contribution_histogram(
 )
 @click.option(
     "--output-dir",
-    default=".",
+    required=True,
     help="Directory to save the output PNG files",
 )
 @click.option(
