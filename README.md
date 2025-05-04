@@ -49,7 +49,7 @@ jobs:
 ## Output
 
 The action generates PNG files named in the format:
-`{username}-{repo_owner}-{repo_name}-contribution-graph.png`
+`{username}-{repo_owner}-{repo_name}-contribution-graph.svg`
 
 Each histogram shows:
 - Number of PRs authored by the user (blue bars)
