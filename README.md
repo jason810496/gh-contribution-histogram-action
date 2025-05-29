@@ -20,30 +20,56 @@ A GitHub Action that generates contribution graph showing the number of pull req
 - `output_dir`: Directory where the generated PNG files will be saved. Optional, defaults to the current directory.
 - `exclude_authored_from_reviewed`: Whether to exclude PRs authored by the user from the reviewed count. Optional, defaults to `false`.
 
-### Example
+### [Example](https://github.com/peterxcli/peterxcli/blob/ba023f1647814d655845888fb66f904b851300ac/.github/workflows/oss-contribution-graph.yml)
 
 ```yaml
-name: Generate Contribution Graph
+name: OSS Contribution Graph
 
 on:
+  schedule:
+    - cron: '0 0 * * *'  # Run on at midnight UTC
   workflow_dispatch:
     inputs:
       targets:
-        description: 'Target repositories and usernames'
+        description: 'Target repositories and usernames (format: username,owner/repo [username,owner/repo ...])'
         required: true
-        default: 'peterxcli,apache/ozone'
+        type: string
+        default: 'peterxcli@apache/ozone, peterxcli@apache/kafka'
+
+      exclude_review:
+        description: 'Exclude review contributions'
+        required: false
+        type: boolean
+        default: false
+
+env:
+  DEFAULT_TARGETS: 'peterxcli@apache/ozone, peterxcli@apache/kafka'
+  EXCLUDE_REVIEW: 'false'
 
 jobs:
-  generate-graph:
+  update-histogram:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      
-      - uses: peterxcli/gh-contribution-graph-action@v1.3
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Generate Contribution Graph
+        uses: peterxcli/gh-contribution-graph-action@main
         with:
-          targets: ${{ github.event.inputs.targets }}
+          targets: ${{ github.event.inputs.targets || env.DEFAULT_TARGETS }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          output_dir: 'graphs'
+          output_dir: 'images'
+          exclude_authored_from_reviewed: ${{ github.event.inputs.exclude_review || env.EXCLUDE_REVIEW }}
+
+      - name: Commit and push updated image
+        run: |
+          git config --global user.name 'GitHub Action'
+          git config --global user.email 'action@github.com'
+          git add images/*.svg
+          git commit -m "Update PR histogram" || echo "No changes to commit"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
 
 ## Output
@@ -60,6 +86,8 @@ Each graph shows:
 Example:
 
 ![peterxcli-apache-ozone-contribution-graph](https://raw.githubusercontent.com/peterxcli/peterxcli/refs/heads/main/images/peterxcli-apache-ozone-contribution-graph.svg)
+
+![jason810496-apache-airflow-contribution-graph](https://raw.githubusercontent.com/jason810496/jason810496/refs/heads/main/histograms/jason810496-apache-airflow-contribution-histogram.svg)
 
 ## License
 
