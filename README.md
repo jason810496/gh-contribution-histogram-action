@@ -59,7 +59,7 @@ Each histogram shows:
 
 Example:
 
-![peterxcli-apache-ozone-contribution-histogram](https://raw.githubusercontent.com/peterxcli/peterxcli/refs/heads/main/histograms/peterxcli-apache-ozone-contribution-histogram.svg)
+![peterxcli-apache-ozone-contribution-histogram](https://raw.githubusercontent.com/peterxcli/peterxcli/refs/heads/main/histograms/peterxcli-apache-ozone-contribution-graph.svg)
 
 ## License
 
