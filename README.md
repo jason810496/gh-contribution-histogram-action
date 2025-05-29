@@ -7,7 +7,7 @@ A GitHub Action that generates contribution graph showing the number of pull req
 ```yaml
 - uses: peterxcli/gh-contribution-graph-action@v1.3
   with:
-    targets: 'username,owner/repo [username,owner/repo ...]'
+    targets: 'username@owner/repo [username@owner/repo ...]'
     github_token: ${{ secrets.GITHUB_TOKEN }}
     output_dir: 'path/to/output'  # Optional, defaults to current directory
     exclude_authored_from_reviewed: true  # Optional, defaults to false
@@ -15,7 +15,7 @@ A GitHub Action that generates contribution graph showing the number of pull req
 
 ### Inputs
 
-- `targets`: Comma-separated list of targets in the format `username,owner/repo`. Multiple targets can be specified with spaces.
+- `targets`: Comma-separated list of targets in the format `username@owner/repo`. Multiple targets can be specified with spaces.
 - `github_token`: GitHub token for API access. Required for authentication.
 - `output_dir`: Directory where the generated PNG files will be saved. Optional, defaults to the current directory.
 - `exclude_authored_from_reviewed`: Whether to exclude PRs authored by the user from the reviewed count. Optional, defaults to `false`.
@@ -23,7 +23,7 @@ A GitHub Action that generates contribution graph showing the number of pull req
 ### Example
 
 ```yaml
-name: Generate Contribution Histogram
+name: Generate Contribution Graph
 
 on:
   workflow_dispatch:
@@ -34,7 +34,7 @@ on:
         default: 'peterxcli,apache/ozone'
 
 jobs:
-  generate-histogram:
+  generate-graph:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -43,7 +43,7 @@ jobs:
         with:
           targets: ${{ github.event.inputs.targets }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          output_dir: 'histograms'
+          output_dir: 'graphs'
 ```
 
 ## Output
@@ -51,7 +51,7 @@ jobs:
 The action generates PNG files named in the format:
 `{username}-{repo_owner}-{repo_name}-contribution-graph.svg`
 
-Each histogram shows:
+Each graph shows:
 - Number of PRs authored by the user (blue bars)
 - Number of PRs reviewed by the user (red bars)
 - Total counts for both authored and reviewed PRs
@@ -59,7 +59,7 @@ Each histogram shows:
 
 Example:
 
-![peterxcli-apache-ozone-contribution-histogram](https://raw.githubusercontent.com/peterxcli/peterxcli/refs/heads/main/histograms/peterxcli-apache-ozone-contribution-graph.svg)
+![peterxcli-apache-ozone-contribution-graph](https://raw.githubusercontent.com/peterxcli/peterxcli/refs/heads/main/images/peterxcli-apache-ozone-contribution-graph.svg)
 
 ## License
 

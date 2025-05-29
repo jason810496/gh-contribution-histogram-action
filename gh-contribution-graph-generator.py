@@ -10,9 +10,10 @@ import requests
 
 from svg_renderer import render_contribution_svg
 from themes import THEME_URI, Theme, get_themes
+from target_parser import parse_targets
 
 
-def generate_contribution_histogram(
+def generate_contribution_graph(
     username: str,
     repo_owner: str,
     repo_name: str,
@@ -21,7 +22,7 @@ def generate_contribution_histogram(
     exclude_authored_from_reviewed: bool = False,
 ):
     """
-    Generate a contribution histogram for a user's PRs in a specific repository.
+    Generate a contribution graph for a user's PRs in a specific repository.
 
     Args:
         username (str): GitHub username to analyze
@@ -176,7 +177,7 @@ def generate_contribution_histogram(
 @click.option(
     "--targets",
     required=True,
-    help="Space-separated list of targets in the format 'username,owner/repo'",
+    help="List of targets in the format 'username@owner/repo'. Multiple targets can be separated by spaces or commas.",
 )
 @click.option(
     "--output-dir",
@@ -210,17 +211,16 @@ def main(
     reviewed_color,
 ):
     """
-    Generate contribution histograms for multiple targets.
+    Generate contribution graphs for multiple targets.
 
     Args:
-        targets (str): Space-separated list of targets in the format 'username,owner/repo'
+        targets (str): List of targets in the format 'username@owner/repo'. Multiple targets can be separated by spaces or commas.
         output_dir (str): Directory to save the output PNG files
         exclude_authored_from_reviewed (bool): Whether to exclude PRs authored by the user from the reviewed count
         theme (str): Theme for the SVG
         authored_color (str): Color for authored PRs line and points
         reviewed_color (str): Color for reviewed PRs line and points
     """
-    parsed_targets = []
     available_themes = get_themes()
     theme: Theme = available_themes.get(theme)
     if not theme:
@@ -234,19 +234,13 @@ def main(
         theme.icon_color = f"#{reviewed_color}"
 
     try:
-        target_arr = targets.split(" ")
-        for target in target_arr:
-            username, repo = target.split(",")
-            repo_owner, repo_name = repo.split("/")
-            parsed_targets.append((username, repo_owner, repo_name))
+        parsed_targets = parse_targets(targets)
     except ValueError as e:
-        raise click.BadParameter(
-            f"Error parsing target '{targets}': {str(e)}. Expected format: username,owner/repo"
-        )
+        raise click.BadParameter(str(e))
 
     for target in parsed_targets:
         try:
-            generate_contribution_histogram(
+            generate_contribution_graph(
                 target[0],
                 target[1],
                 target[2],
@@ -256,7 +250,7 @@ def main(
             )
         except Exception as e:
             click.echo(
-                f"Error generating histogram for {target[0]} in {target[1]}/{target[2]}: {str(e)}",
+                f"Error generating graph for {target[0]} in {target[1]}/{target[2]}: {str(e)}",
                 err=True,
             )
             sys.exit(1)

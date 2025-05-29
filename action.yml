@@ -1,10 +1,10 @@
-name: 'OSS Contribution Histogram Generator'
-description: 'Generate contribution histograms for GitHub users across repositories'
+name: 'OSS Contribution Graph Generator'
+description: 'Generate contribution graphs for GitHub users across repositories'
 author: 'peterxcli, jason810496'
 
 inputs:
   targets:
-    description: 'Target repositories and usernames (format: username,owner/repo [username,owner/repo ...])'
+    description: 'Target repositories and usernames (format: username@owner/repo, multiple targets can be separated by spaces or commas)'
     required: true
   github_token:
     description: 'GitHub token for API access'
@@ -18,7 +18,7 @@ inputs:
     required: false
     default: 'false'
   theme:
-    description: 'Theme for the histogram (default: "default")'
+    description: 'Theme for the graph (default: "default")'
     required: true
     default: 'default'
   authored_color:

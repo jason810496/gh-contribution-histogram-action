@@ -99,7 +99,7 @@ wheels = [
 ]
 
 [[package]]
-name = "gh-contribution-histogram-action"
+name = "gh-contribution-graph-action"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [

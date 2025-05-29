@@ -1,7 +1,7 @@
 [project]
-name = "gh-contribution-histogram-action"
+name = "gh-contribution-graph-action"
 version = "0.1.0"
-description = "Generate contribution histograms for GitHub users across repositories"
+description = "Generate contribution graphs for GitHub users across repositories"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [

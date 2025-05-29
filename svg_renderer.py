@@ -18,7 +18,7 @@ def render_contribution_svg(
     output_dir: str = ".",
 ):
     """
-    Generate an SVG contribution histogram using the Jinja template.
+    Generate an SVG contribution graph using the Jinja template.
 
     Args:
         username (str): GitHub username
@@ -73,7 +73,7 @@ def render_contribution_svg(
     with open(output_filename, "w") as f:
         f.write(rendered_svg)
 
-    print(f"\nContribution histogram SVG saved as: {output_filename.absolute()}")
+    print(f"\nContribution graph SVG saved as: {output_filename.absolute()}")
 
     return str(output_filename.absolute())
 
