@@ -5,7 +5,7 @@ A GitHub Action that generates contribution graph showing the number of pull req
 ## Usage
 
 ```yaml
-- uses: peterxcli/gh-contribution-graph-action@v1.3
+- uses: peterxcli/gh-contribution-graph-action@v2.0
   with:
     targets: 'username@owner/repo [username@owner/repo ...]'
     github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -54,7 +54,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Generate Contribution Graph
-        uses: peterxcli/gh-contribution-graph-action@main
+        uses: peterxcli/gh-contribution-graph-action@2.0
         with:
           targets: ${{ github.event.inputs.targets || env.DEFAULT_TARGETS }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
